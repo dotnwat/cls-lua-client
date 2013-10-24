@@ -40,6 +40,32 @@ describe("exec", function()
     clslua.exec(ioctx, "oid", script, "func", "input")
   end)
 
+  it("runs the say_hello test", function()
+    local script = [[
+    function say_hello(input, output)
+      if #input > 100 then
+        return -cls.EINVAL
+      end
+      output:append("Hello, ")
+      if #input == 0 then
+        output:append("world")
+      else
+        output:append(input:str())
+      end
+      output:append("!")
+    end
+    cls.register(say_hello)
+    ]]
+
+    local ret, outdata = clslua.exec(ioctx, "oid", script, "say_hello", "")
+    assert.is_equal(ret, 0)
+    assert(outdata == "Hello, world!")
+
+    local ret, outdata = clslua.exec(ioctx, "oid", script, "say_hello", "John")
+    assert.is_equal(ret, 0)
+    assert(outdata == "Hello, John!")
+  end)
+
   it("runs the echo test", function()
     local script = [[
       function echo(input, output)
